@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
         imageV = (ImageView) findViewById(R.id.main_imageView);
 
-        IM = new ImageManager(this.getApplicationContext(), imageV);
+        IM = new ImageManager(this.getApplicationContext());
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
     /*
      * Top right activity bar menu. Currently holds: Settings
      */
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -113,39 +112,22 @@ public class MainActivity extends AppCompatActivity {
             switch (requestCode) {
                 case Statics.CAMERA_REQUEST:
                     IM.saveImageToMediaGallery();
-                    IM.loadImageFromStorage();
+                    imageV.setImageBitmap(IM.loadLastStoredImage());
                     break;
                 case Statics.GALLERY_ADD_REQUEST:
                     if(data != null) {
-                        loadGalleryImage(data);
+                        imageV.setImageBitmap(IM.loadImage(data));
                     }
                     break;
                 case Statics.GALLERY_DEL_REQUEST:
                     if(data != null) {
                         IM.deleteImage(data);
+                        imageV.setImageBitmap(null);
+                        imageV.destroyDrawingCache();
                     }
             }
         }
     }
-
-    /*
-     * Save an image from a camera and load it to the imageView.
-     */
-    public void loadGalleryImage(Intent data) {
-        Uri selectedImage = data.getData();
-        String[] filePathColumn = { MediaStore.Images.Media.DATA };
-
-        Cursor cursor = getContentResolver().query(selectedImage,
-                filePathColumn, null, null, null);
-        cursor.moveToFirst();
-
-        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-        String picturePath = cursor.getString(columnIndex);
-        cursor.close();
-
-        imageV.setImageBitmap(BitmapFactory.decodeFile(picturePath));
-    }
-
 
     /*
      * All intent launchers

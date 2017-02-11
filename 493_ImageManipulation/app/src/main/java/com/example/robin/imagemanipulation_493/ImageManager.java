@@ -29,39 +29,12 @@ import java.util.UUID;
 
 public class ImageManager {
 
-
-    private final WeakReference<ImageView> imgViewRef;
     private Context context;
     public String mCurrentPhotoPath;
 
-    public ImageManager(Context _context, ImageView _img) {
+    public ImageManager(Context _context) {
         context = _context;
-        imgViewRef = new WeakReference<ImageView>(_img);
     }
-
-    /*
-    public String saveImageToInternalStorage(Bitmap bitmap) {
-        ContextWrapper cw = new ContextWrapper(context);
-        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
-        File mypath = new File(directory, "profile.jpg");
-
-        FileOutputStream fos = null;
-
-        try {
-            fos = new FileOutputStream(mypath);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                fos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return directory.getAbsolutePath();
-    }
-    */
 
     public boolean saveImageToMediaGallery() {
 
@@ -87,24 +60,24 @@ public class ImageManager {
         return false;
     }
 
-    public void loadImageFromStorage() {
+    public Bitmap loadLastStoredImage() {
 
+        Bitmap b = null;
         try {
             File f = new File(mCurrentPhotoPath);
-            Bitmap b = BitmapFactory.decodeStream(new FileInputStream(f));
-            if(imgViewRef != null) {
-                final ImageView img = imgViewRef.get();
-
-                if(img != null) {
-                    img.setImageBitmap(b);
-                }
-            }
+            b = BitmapFactory.decodeStream(new FileInputStream(f));
+            return b;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        return b;
     }
 
-    public void deleteImage(Intent data) {
+    public Bitmap loadImage(String path) {
+        return BitmapFactory.decodeFile(path);
+    }
+
+    public Bitmap loadImage(Intent data) {
         Uri selectedImage = data.getData();
         String[] filePathColumn = { MediaStore.Images.Media.DATA };
 
@@ -116,8 +89,12 @@ public class ImageManager {
         String picturePath = cursor.getString(columnIndex);
         cursor.close();
 
-        File f = new File(picturePath);
-        f.delete();
+        return BitmapFactory.decodeFile(picturePath);
+    }
+
+    public void deleteImage(Intent data) {
+        Uri selectedImage = data.getData();
+        context.getContentResolver().delete(selectedImage, null, null);
     }
 
     public File createImageFile() throws IOException {
