@@ -7,6 +7,6 @@ package com.example.robin.imagemanipulation_493;
 public class Statics {
 
     public static final int CAMERA_REQUEST = 1000;
-    public static final int GALLERY_REQUEST = 1001;
-
+    public static final int GALLERY_ADD_REQUEST = 1001;
+    public static final int GALLERY_DEL_REQUEST = 1002;
 }
