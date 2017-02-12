@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -68,6 +69,8 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_settings:
                 //TODO: Launch settings activity
                 return true;
+            case R.id.action_swirl:
+                applyFilter(R.id.action_swirl);
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -99,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
 
         builder.show();
     }
-
 
     /*
      * Activity results. If camera launched, save the photo and display. If gallery launched,
@@ -161,6 +163,21 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, Statics.GALLERY_DEL_REQUEST);
     }
+
+
+    /*
+     * Apply the filters to the image
+     */
+
+    public void applyFilter(int id) {
+        switch(id) {
+            case R.id.action_swirl:
+                SwirlTransform mSwirl = new SwirlTransform(this.getApplicationContext(), ((BitmapDrawable)imageV.getDrawable()).getBitmap());
+                mSwirl.runFilter();
+                imageV.setImageBitmap(mSwirl.getResult());
+        }
+    }
+
 
     public void showToast(String str) {
         Toast.makeText(getApplicationContext(),
