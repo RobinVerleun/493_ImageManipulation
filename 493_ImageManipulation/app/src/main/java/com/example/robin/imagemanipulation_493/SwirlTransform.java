@@ -12,11 +12,10 @@ public class SwirlTransform extends AbstractTransform {
 
     public SwirlTransform(Context context, Bitmap original) {
         super(context, original);
-        showToast("TRYYYING");
     }
 
     public void runFilter() {
-        script.forEach_swirl(input, output);
+        script.invoke_processSwirl(input, output);
     }
 
     public void showToast(String str) {

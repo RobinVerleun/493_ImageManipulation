@@ -71,6 +71,10 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.action_swirl:
                 applyFilter(R.id.action_swirl);
+                return true;
+            case R.id.action_trans2:
+                applyFilter(R.id.action_trans2);
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -170,12 +174,18 @@ public class MainActivity extends AppCompatActivity {
      */
 
     public void applyFilter(int id) {
+
+        AbstractTransform mTransform = null;
         switch(id) {
             case R.id.action_swirl:
-                SwirlTransform mSwirl = new SwirlTransform(this.getApplicationContext(), ((BitmapDrawable)imageV.getDrawable()).getBitmap());
-                mSwirl.runFilter();
-                imageV.setImageBitmap(mSwirl.getResult());
+                mTransform = new SwirlTransform(this.getApplicationContext(), ((BitmapDrawable)imageV.getDrawable()).getBitmap());
+                break;
+            case R.id.action_trans2:
+                mTransform = new RippleTransform(this.getApplicationContext(), ((BitmapDrawable)imageV.getDrawable()).getBitmap());
+                break;
         }
+        mTransform.runFilter();
+        imageV.setImageBitmap(mTransform.getResult());
     }
 
 
