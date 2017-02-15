@@ -3,8 +3,8 @@
 
     <!-- App Bar Dropdown Menu -->
     <string name="action_settings">Settings</string>
-    <string name="action_trans1">Swirl</string>
-    <string name="action_trans2">Transform 2</string>
-    <string name="action_trans3">Transform 3</string>
+    <string name="action_trans1">WaterDrop</string>
+    <string name="action_trans2">Ripple</string>
+    <string name="action_trans3">Twist</string>
 
 </resources>

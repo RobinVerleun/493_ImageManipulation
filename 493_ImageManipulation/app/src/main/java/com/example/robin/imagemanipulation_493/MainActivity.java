@@ -2,13 +2,15 @@ package com.example.robin.imagemanipulation_493;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.gesture.Gesture;
+import android.gesture.GestureLibraries;
+import android.gesture.GestureLibrary;
+import android.gesture.GestureOverlayView;
+import android.gesture.GestureOverlayView.OnGesturePerformedListener;
+import android.gesture.Prediction;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.FileProvider;
@@ -23,13 +25,15 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
-import static android.R.attr.data;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnGesturePerformedListener {
 
     private ImageView imageV;
     private ImageManager IM;
+    private GestureLibrary gLibrary;
+    private FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,9 +45,17 @@ public class MainActivity extends AppCompatActivity {
 
         imageV = (ImageView) findViewById(R.id.main_imageView);
 
-        IM = new ImageManager(this.getApplicationContext());
+        IM = new ImageManager(
+                this.getApplicationContext());
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        loadGestureOverlay();
+
+        GestureOverlayView gOverlay =
+                (GestureOverlayView) findViewById(R.id.gOverlay);
+        gOverlay.addOnGesturePerformedListener(this);
+
+
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -68,12 +80,6 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_settings:
                 //TODO: Launch settings activity
-                return true;
-            case R.id.action_swirl:
-                applyFilter(R.id.action_swirl);
-                return true;
-            case R.id.action_trans2:
-                applyFilter(R.id.action_trans2);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -136,6 +142,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /*
+     * Gesture override method
+     */
+    public void onGesturePerformed(GestureOverlayView overlay, Gesture gesture) {
+        if(imageV.getDrawable() != null) {
+            ArrayList<Prediction> predictions = gLibrary.recognize(gesture);
+            if (predictions.size() > 0 && predictions.get(0).score > 1.0) {
+
+                String action = predictions.get(0).name;
+
+                switch (action) {
+                    case "Drop":
+                        applyFilter(Statics.WATER);
+                        return;
+                    case "Twist":
+                        applyFilter(Statics.TWIST);
+                        return;
+                    case "Ripple":
+                        applyFilter(Statics.RIPPLE);
+                        return;
+                    default:
+                        return;
+                }
+            }
+            showToast("Gesture not recognized.");
+        }
+
+    }
+
+    /*
      * All intent launchers
      */
     public void launchCameraIntent() {
@@ -177,17 +212,47 @@ public class MainActivity extends AppCompatActivity {
 
         AbstractTransform mTransform = null;
         switch(id) {
-            case R.id.action_swirl:
-                mTransform = new SwirlTransform(this.getApplicationContext(), ((BitmapDrawable)imageV.getDrawable()).getBitmap());
+            case Statics.WATER:
+                mTransform = new WaterTransform(this.getApplicationContext(), ((BitmapDrawable)imageV.getDrawable()).getBitmap());
                 break;
-            case R.id.action_trans2:
+            case Statics.RIPPLE:
                 mTransform = new RippleTransform(this.getApplicationContext(), ((BitmapDrawable)imageV.getDrawable()).getBitmap());
                 break;
+            case Statics.TWIST:
+                mTransform = new TwirlTransform(this.getApplicationContext(), ((BitmapDrawable)imageV.getDrawable()).getBitmap());
         }
+        toggleFab(false);
         mTransform.runFilter();
         imageV.setImageBitmap(mTransform.getResult());
+        toggleFab(true);
     }
 
+    /*
+     * Load the gesture overlay
+     */
+    private void loadGestureOverlay() {
+        gLibrary = GestureLibraries.fromRawResource(
+                this,
+                R.raw.gestures);
+
+        if (!gLibrary.load()) {
+            finish();
+        }
+    }
+
+    /*
+     * Helper functions for functionalities
+     */
+
+    public void toggleFab(boolean state) {
+        if(state) {
+            fab.setEnabled(true);
+            fab.setVisibility(FloatingActionButton.VISIBLE);
+        } else {
+            fab.setEnabled(false);
+            fab.setVisibility(FloatingActionButton.GONE);
+        }
+    }
 
     public void showToast(String str) {
         Toast.makeText(getApplicationContext(),
