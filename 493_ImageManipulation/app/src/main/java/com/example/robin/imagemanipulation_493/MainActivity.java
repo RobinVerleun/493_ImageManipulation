@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity implements OnGesturePerforme
     private ImageView imageV;
     private ImageManager IM;
     private GestureLibrary gLibrary;
-    private FloatingActionButton fab;
+    private static FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,14 +123,17 @@ public class MainActivity extends AppCompatActivity implements OnGesturePerforme
 
             switch (requestCode) {
                 case Statics.CAMERA_REQUEST:
-                    IM.saveImageToMediaGallery();
-                    imageV.setImageBitmap(IM.loadLastStoredImage());
+                    PhotoTask photoTask = new PhotoTask(imageV, IM);
+                    toggleFab(false);
+                    photoTask.execute();
                     break;
+
                 case Statics.GALLERY_ADD_REQUEST:
                     if(data != null) {
                         imageV.setImageBitmap(IM.loadImage(data));
                     }
                     break;
+
                 case Statics.GALLERY_DEL_REQUEST:
                     if(data != null) {
                         IM.deleteImage(data);
@@ -210,7 +213,9 @@ public class MainActivity extends AppCompatActivity implements OnGesturePerforme
 
     public void applyFilter(int id) {
 
+        TransformTask mTransformTask = new TransformTask(imageV, this.getApplicationContext());
         AbstractTransform mTransform = null;
+
         switch(id) {
             case Statics.WATER:
                 mTransform = new WaterTransform(this.getApplicationContext(), ((BitmapDrawable)imageV.getDrawable()).getBitmap());
@@ -222,9 +227,7 @@ public class MainActivity extends AppCompatActivity implements OnGesturePerforme
                 mTransform = new TwirlTransform(this.getApplicationContext(), ((BitmapDrawable)imageV.getDrawable()).getBitmap());
         }
         toggleFab(false);
-        mTransform.runFilter();
-        imageV.setImageBitmap(mTransform.getResult());
-        toggleFab(true);
+        mTransformTask.execute(mTransform);
     }
 
     /*
@@ -244,13 +247,13 @@ public class MainActivity extends AppCompatActivity implements OnGesturePerforme
      * Helper functions for functionalities
      */
 
-    public void toggleFab(boolean state) {
+    public static void toggleFab(boolean state) {
         if(state) {
             fab.setEnabled(true);
             fab.setVisibility(FloatingActionButton.VISIBLE);
         } else {
             fab.setEnabled(false);
-            fab.setVisibility(FloatingActionButton.GONE);
+            fab.setVisibility(FloatingActionButton.INVISIBLE);
         }
     }
 

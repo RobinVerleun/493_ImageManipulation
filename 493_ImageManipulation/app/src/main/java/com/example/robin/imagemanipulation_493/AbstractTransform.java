@@ -2,6 +2,7 @@ package com.example.robin.imagemanipulation_493;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.support.v8.renderscript.*;
 
 /**
